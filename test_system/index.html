@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Majin Analytics API Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .json-container {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6 text-blue-600">Majin Analytics API Tester</h1>
+        
+        <!-- 設定セクション -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">API Endpoint URL</label>
+                <input type="text" id="apiUrl" placeholder="https://xxxx.execute-api.ap-northeast-1.amazonaws.com" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">X-API-Key</label>
+                <input type="password" id="apiKey" placeholder="your-api-key" 
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </div>
+
+        <hr class="my-6">
+
+        <!-- 分析開始セクション -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">1. 分析ジョブの作成 (POST /analyze)</h2>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Request Body (JSON)</label>
+                <textarea id="postBody" rows="5" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 font-mono text-sm">
+{
+  "data_source": {
+    "type": "s3",
+    "uri": "s3://your-bucket/your-data.csv"
+  },
+  "callback_url": ""
+}</textarea>
+            </div>
+            <button onclick="startAnalysis()" id="btnStart" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">分析開始</button>
+        </div>
+
+        <!-- ステータス確認セクション -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">2. ステータス確認 (GET /jobs/{id})</h2>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="jobId" placeholder="Job ID" 
+                    class="block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                <button onclick="checkStatus()" id="btnStatus" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition whitespace-nowrap">状態確認</button>
+            </div>
+        </div>
+
+        <!-- レスポンス表示 -->
+        <div>
+            <h2 class="text-lg font-semibold mb-2">Response</h2>
+            <div id="responseOutput" class="json-container">レスポンスがここに表示されます...</div>
+        </div>
+    </div>
+
+    <script>
+        function log(data) {
+            const output = document.getElementById('responseOutput');
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function startAnalysis() {
+            const url = document.getElementById('apiUrl').value.replace(/\/$/, '');
+            const key = document.getElementById('apiKey').value;
+            const body = document.getElementById('postBody').value;
+
+            if (!url || !key) {
+                alert('URLとAPIキーを入力してください');
+                return;
+            }
+
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStart').textContent = '送信中...';
+
+            try {
+                const response = await fetch(`${url}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': key
+                    },
+                    body: body
+                });
+
+                const result = await response.json();
+                log(result);
+
+                if (result.jobId) {
+                    document.getElementById('jobId').value = result.jobId;
+                }
+            } catch (error) {
+                log({ error: error.message });
+            } finally {
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStart').textContent = '分析開始';
+            }
+        }
+
+        async function checkStatus() {
+            const url = document.getElementById('apiUrl').value.replace(/\/$/, '');
+            const key = document.getElementById('apiKey').value;
+            const jobId = document.getElementById('jobId').value;
+
+            if (!url || !key || !jobId) {
+                alert('URL、APIキー、Job IDを入力してください');
+                return;
+            }
+
+            document.getElementById('btnStatus').disabled = true;
+            document.getElementById('btnStatus').textContent = '確認中...';
+
+            try {
+                const response = await fetch(`${url}/jobs/${jobId}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-Key': key
+                    }
+                });
+
+                const result = await response.json();
+                log(result);
+            } catch (error) {
+                log({ error: error.message });
+            } finally {
+                document.getElementById('btnStatus').disabled = false;
+                document.getElementById('btnStatus').textContent = '状態確認';
+            }
+        }
+    </script>
+</body>
+</html>

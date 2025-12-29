@@ -80,7 +80,7 @@ def handler(event, context):
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-API-Key',
                 'Access-Control-Allow-Methods': 'OPTIONS,GET'
             },
             'body': json.dumps(item, default=str)

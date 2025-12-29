@@ -35,7 +35,7 @@ Resources:
       Name: !Sub ${ProjectName}-api
       ProtocolType: HTTP
       CorsConfiguration:
-        AllowHeaders: ["Content-Type", "Authorization"]
+        AllowHeaders: ["Content-Type", "Authorization", "X-API-Key"]
         AllowMethods: ["GET", "POST", "OPTIONS"]
         AllowOrigins: ["*"]
 
