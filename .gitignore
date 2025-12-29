@@ -1,0 +1,24 @@
+# Node
+node_modules/
+dist/
+.env
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# その他
+*.bak
+*.swp
+outputs/

@@ -1,0 +1,17 @@
+# 製造実行システム (MES) テーブル構造定義
+
+## Table: Production_Logs
+- Timestamp: 記録日時 (YYYY-MM-DD HH:MM:SS)
+- Machine_ID: 設備ID (M01: プレス機, M02: 溶接ロボット, M03: 検査装置)
+- Process_Name: 工程名 (Pressing, Welding, Inspection)
+- Cycle_Time: 1サイクルあたりの所要時間 (秒)
+- Defect_Count: 不良発生数 (個)
+- Temperature: 設備動作温度 (摂氏)
+- Pressure: 加工圧力 (MPa)
+- Operator_ID: 作業者ID
+- Lot_Number: 製造ロット番号
+
+## 分析のヒント
+- Cycle_Time が 15秒を超える場合はボトルネックの可能性がある。
+- Temperature が 200度を超えると Defect_Count が増加する傾向がある。
+- Operator_ID ごとの熟練度差が Cycle_Time に影響している可能性がある。
