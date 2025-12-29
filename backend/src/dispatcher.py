@@ -16,7 +16,13 @@ ALLOWED_IP_RANGE = os.environ.get('ALLOWED_IP_RANGE', '0.0.0.0/0')
 API_KEY = os.environ.get('API_KEY')
 
 def is_ip_allowed(source_ip):
-...existing code...
+    """
+    送信元IPが許可リストに含まれているかチェック
+    """
+    if ALLOWED_IP_RANGE == '0.0.0.0/0':
+        return True
+    try:
+        return ipaddress.ip_address(source_ip) in ipaddress.ip_network(ALLOWED_IP_RANGE)
     except Exception as e:
         print(f"IP validation error: {e}")
         return False
