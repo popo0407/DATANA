@@ -17,6 +17,10 @@ Parameters:
   AIModelId:
     Type: String
     Default: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  AllowedIpRange:
+    Type: String
+    Default: "0.0.0.0/0"
+    Description: "Allowed IP range for external API access (CIDR format). Use 0.0.0.0/0 to allow all."
 
 Resources:
   # --- API Gateway (HTTP API) ---
@@ -53,6 +57,7 @@ Resources:
           DATA_BUCKET: !Ref DataBucketName
           JOB_TABLE: !Ref JobTableName
           PROCESS_FUNCTION: !Sub ${ProjectName}-processor
+          ALLOWED_IP_RANGE: !Ref AllowedIpRange
 
   StatusFunction:
     Type: AWS::Lambda::Function
@@ -67,6 +72,7 @@ Resources:
         Variables:
           JOB_TABLE: !Ref JobTableName
           DATA_BUCKET: !Ref DataBucketName
+          ALLOWED_IP_RANGE: !Ref AllowedIpRange
 
   ProcessorFunction:
     Type: AWS::Lambda::Function
