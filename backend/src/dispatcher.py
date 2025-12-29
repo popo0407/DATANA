@@ -122,11 +122,6 @@ def handler(event, context):
         
         return {
             'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-API-Key',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST'
-            },
             'body': json.dumps(response_body)
         }
         

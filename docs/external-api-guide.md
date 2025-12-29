@@ -3,6 +3,7 @@
 本ガイドでは、Majin Analytics の分析機能を外部システムから呼び出すための具体的な手順を説明します。
 
 ## 1. 認証準備
+
 API を呼び出すには、以下の情報が必要です。
 
 - **API Endpoint**: `https://{api-id}.execute-api.{region}.amazonaws.com`
@@ -13,6 +14,7 @@ API を呼び出すには、以下の情報が必要です。
 ## 2. 連携フロー
 
 ### パターン A: S3 経由でのデータ提供 (推奨)
+
 外部システムの S3 バケットにあるデータを直接分析する場合。
 
 1. `POST /analyze` を呼び出し、`data_source` に S3 URI を指定。
@@ -20,6 +22,7 @@ API を呼び出すには、以下の情報が必要です。
 3. `GET /jobs/{id}` で結果を取得。
 
 ### パターン B: 直接アップロード
+
 分析データを API 経由でアップロードする場合。
 
 1. `POST /analyze` を呼び出し、`uploadUrl` を取得。
@@ -54,6 +57,7 @@ print(status_res.json())
 ```
 
 ## 4. Webhook 通知の受信
+
 分析完了時、指定した `callback_url` に以下の JSON が POST されます。
 
 ```json
@@ -63,4 +67,5 @@ print(status_res.json())
   "resultKey": "results/uuid-....json"
 }
 ```
+
 通知を受け取ったら、`GET /jobs/{id}` を呼び出して詳細な分析結果を取得してください。
