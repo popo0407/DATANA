@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: Majin Analytics External API
+  description: |
+    Majin Analytics の分析機能を外部システムから利用するための API です。
+    CSV データのアップロード、AI による分析、結果の取得、および Webhook による通知をサポートします。
+  version: 1.0.0
+servers:
+  - url: https://{api-id}.execute-api.{region}.amazonaws.com
+    description: Production API Server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    JobRequest:
+      type: object
+      properties:
+        filename:
+          type: string
+          example: production_data.csv
+        data_source:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [s3]
+            uri:
+              type: string
+              example: s3://my-bucket/data.csv
+        callback_url:
+          type: string
+          format: uri
+          example: https://external-system.com/api/webhook
+    JobResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        uploadUrl:
+          type: string
+          format: uri
+          description: data_source 未指定時のみ返却されます。
+    JobStatus:
+      type: object
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+        resultUrl:
+          type: string
+          format: uri
+        error:
+          type: string
+
+paths:
+  /analyze:
+    post:
+      summary: 分析ジョブの作成
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+      responses:
+        '200':
+          description: ジョブが作成されました。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '401':
+          description: 認証エラー
+        '403':
+          description: IP アドレス制限による拒否
+
+  /jobs/{id}:
+    get:
+      summary: ジョブ状態・結果の取得
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ジョブの状態を返します。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '404':
+          description: ジョブが見つかりません。

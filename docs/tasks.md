@@ -58,9 +58,9 @@
 
 ## フェーズ 8: 外部システム向け API 公開
 
-- [ ] 8.1 [Infra] API Key 認証の導入 (API Gateway Usage Plan)
+- [x] 8.1 [Infra] API Key 認証の導入 (API Gateway Usage Plan)
 - [x] 8.2 [Infra] IP アドレス制限の実装 (AllowedIpRange パラメータ追加)
-- [ ] 8.3 [Backend] Webhook 通知機能の実装 (callback_url 対応)
-- [ ] 8.4 [Backend] データ入力方式の拡張 (S3 URI / Direct Data)
-- [ ] 8.5 [Docs] OpenAPI 3.0 仕様書の作成
-- [ ] 8.6 [Docs] 外部システム向け連携ガイドの作成
+- [x] 8.3 [Backend] Webhook 通知機能の実装 (callback_url 対応)
+- [x] 8.4 [Backend] データ入力方式の拡張 (S3 URI / Direct Data)
+- [x] 8.5 [Docs] OpenAPI 3.0 仕様書の作成
+- [x] 8.6 [Docs] 外部システム向け連携ガイドの作成

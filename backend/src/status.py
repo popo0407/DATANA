@@ -8,24 +8,31 @@ dynamodb = boto3.resource('dynamodb')
 JOB_TABLE = os.environ['JOB_TABLE']
 DATA_BUCKET = os.environ.get('DATA_BUCKET')
 ALLOWED_IP_RANGE = os.environ.get('ALLOWED_IP_RANGE', '0.0.0.0/0')
+API_KEY = os.environ.get('API_KEY')
 
 def is_ip_allowed(source_ip):
-    """
-    送信元IPが許可リストに含まれているかチェック
-    """
-    if ALLOWED_IP_RANGE == '0.0.0.0/0':
-        return True
-    try:
-        return ipaddress.ip_address(source_ip) in ipaddress.ip_network(ALLOWED_IP_RANGE)
+...existing code...
     except Exception as e:
         print(f"IP validation error: {e}")
         return False
+
+def validate_api_key(headers):
+    """
+    API Keyの検証
+    """
+    if not API_KEY:
+        return True
+    
+    request_key = headers.get('x-api-key') or headers.get('X-API-Key')
+    return request_key == API_KEY
 
 def handler(event, context):
     """
     ジョブのステータス確認
     """
     try:
+        headers = event.get('headers', {})
+        
         # IP制限チェック
         source_ip = event.get('requestContext', {}).get('http', {}).get('sourceIp')
         if source_ip and not is_ip_allowed(source_ip):
@@ -33,6 +40,13 @@ def handler(event, context):
             return {
                 'statusCode': 403,
                 'body': json.dumps({'error': 'Forbidden: IP address not allowed'})
+            }
+
+        # API Keyチェック
+        if not headers.get('authorization') and not validate_api_key(headers):
+            return {
+                'statusCode': 401,
+                'body': json.dumps({'error': 'Unauthorized: Invalid API Key'})
             }
 
         job_id = event.get('pathParameters', {}).get('id')

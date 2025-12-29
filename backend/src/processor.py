@@ -4,15 +4,34 @@ import re
 import boto3
 import pandas as pd
 import io
+import urllib3
 from datetime import datetime
 
 s3 = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 bedrock = boto3.client('bedrock-runtime')
+http = urllib3.PoolManager()
 
 DATA_BUCKET = os.environ['DATA_BUCKET']
 JOB_TABLE = os.environ['JOB_TABLE']
 MODEL_ID = os.environ.get('MODEL_ID', 'anthropic.claude-3-5-sonnet-20240620-v1:0')
+
+def send_webhook(callback_url, payload):
+    """
+    Webhook通知の送信
+    """
+    try:
+        encoded_data = json.dumps(payload).encode('utf-8')
+        res = http.request(
+            'POST',
+            callback_url,
+            body=encoded_data,
+            headers={'Content-Type': 'application/json'},
+            timeout=10.0
+        )
+        print(f"Webhook sent to {callback_url}, status: {res.status}")
+    except Exception as e:
+        print(f"Failed to send webhook: {str(e)}")
 
 def clean_num(val):
     """
@@ -97,18 +116,30 @@ def handler(event, context):
     """
     汎用AI分析エンジン (Universal Semantic Analysis & Dynamic Execution)
     """
-    if 'Records' in event:
-        bucket = event['Records'][0]['s3']['bucket']['name']
-        key = event['Records'][0]['s3']['object']['key']
-        job_id = key.split('/')[-1].replace('.csv', '')
-    else:
-        job_id = event.get('jobId')
-        key = f"uploads/{job_id}.csv"
-        bucket = DATA_BUCKET
-
     table = dynamodb.Table(JOB_TABLE)
-    
+    job_id = None
+    callback_url = None
+
     try:
+        if 'Records' in event:
+            bucket = event['Records'][0]['s3']['bucket']['name']
+            key = event['Records'][0]['s3']['object']['key']
+            job_id = key.split('/')[-1].replace('.csv', '')
+        else:
+            job_id = event.get('jobId')
+            data_source = event.get('dataSource')
+            if data_source and data_source.get('type') == 's3':
+                # s3://bucket/key 形式をパース
+                uri = data_source['uri'].replace('s3://', '')
+                bucket, key = uri.split('/', 1)
+            else:
+                bucket = DATA_BUCKET
+                key = f"uploads/{job_id}.csv"
+
+        # ジョブ情報の取得 (callbackUrl確認用)
+        job_item = table.get_item(Key={'jobId': job_id}).get('Item', {})
+        callback_url = job_item.get('callbackUrl')
+
         table.update_item(
             Key={'jobId': job_id},
             UpdateExpression="SET #s = :s",
@@ -327,12 +358,27 @@ def handler(event, context):
             ExpressionAttributeValues={':s': 'COMPLETED', ':rk': result_key}
         )
 
+        # Webhook通知
+        if callback_url:
+            send_webhook(callback_url, {
+                'jobId': job_id,
+                'status': 'COMPLETED',
+                'resultKey': result_key
+            })
+
     except Exception as e:
         print(f"Error: {str(e)}")
-        table.update_item(
-            Key={'jobId': job_id},
-            UpdateExpression="SET #s = :s, #e = :e",
-            ExpressionAttributeNames={'#s': 'status', '#e': 'error'},
-            ExpressionAttributeValues={':s': 'FAILED', ':e': str(e)}
-        )
+        if job_id:
+            table.update_item(
+                Key={'jobId': job_id},
+                UpdateExpression="SET #s = :s, #e = :e",
+                ExpressionAttributeNames={'#s': 'status', '#e': 'error'},
+                ExpressionAttributeValues={':s': 'FAILED', ':e': str(e)}
+            )
+            if callback_url:
+                send_webhook(callback_url, {
+                    'jobId': job_id,
+                    'status': 'FAILED',
+                    'error': str(e)
+                })
 

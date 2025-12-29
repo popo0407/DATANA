@@ -21,6 +21,11 @@ Parameters:
     Type: String
     Default: "0.0.0.0/0"
     Description: "Allowed IP range for external API access (CIDR format). Use 0.0.0.0/0 to allow all."
+  ApiKey:
+    Type: String
+    NoEcho: true
+    Default: "majin-secret-key-2024"
+    Description: "API Key for external system access."
 
 Resources:
   # --- API Gateway (HTTP API) ---
@@ -58,6 +63,7 @@ Resources:
           JOB_TABLE: !Ref JobTableName
           PROCESS_FUNCTION: !Sub ${ProjectName}-processor
           ALLOWED_IP_RANGE: !Ref AllowedIpRange
+          API_KEY: !Ref ApiKey
 
   StatusFunction:
     Type: AWS::Lambda::Function
@@ -73,6 +79,7 @@ Resources:
           JOB_TABLE: !Ref JobTableName
           DATA_BUCKET: !Ref DataBucketName
           ALLOWED_IP_RANGE: !Ref AllowedIpRange
+          API_KEY: !Ref ApiKey
 
   ProcessorFunction:
     Type: AWS::Lambda::Function
