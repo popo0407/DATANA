@@ -65,7 +65,17 @@ CloudFormation を使用して、すべての AWS リソースを構築します
 - **JSON**: 分析データ（生データ）を JSON 形式で保存
 - **HTML**: インタラクティブなグラフを含む単一 HTML ファイルとして保存
 
-## 🛠️ 開発者向け情報
+## � 外部システム連携 (External API)
+
+本システムの分析機能は、API を通じて外部システム（ERP、生産管理システム、BI ツール等）から直接呼び出すことが可能です。
+
+- **認証**: API Key 方式によるセキュアなアクセス。
+- **柔軟な入力**: S3 URI 指定や直接データ送信に対応。
+- **Webhook 通知**: 分析完了時に外部 URL へ結果を自動通知。
+
+詳細は [docs/external-api-design.md](docs/external-api-design.md) を参照してください。
+
+## �🛠️ 開発者向け情報
 
 - **Backend**: ackend/src/ に分析ロジックと AI プロンプトがあります。
 - **Frontend**: rontend/src/ に React コンポーネントがあります。

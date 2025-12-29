@@ -55,3 +55,11 @@
 - [x] 7.1 [Backend] 製造業向けプロンプトの最適化 (processor.py)
 - [x] 7.2 [Data] 製造業向けサンプルデータの作成 (input/production_data.csv)
 - [x] 7.3 [Docs] 製造業視点でのシステムデザイン更新 (system-design.md)
+
+## フェーズ 8: 外部システム向け API 公開
+
+- [ ] 8.1 [Infra] API Key 認証の導入 (API Gateway Usage Plan)
+- [ ] 8.2 [Backend] Webhook 通知機能の実装 (callback_url 対応)
+- [ ] 8.3 [Backend] データ入力方式の拡張 (S3 URI / Direct Data)
+- [ ] 8.4 [Docs] OpenAPI 3.0 仕様書の作成
+- [ ] 8.5 [Docs] 外部システム向け連携ガイドの作成
